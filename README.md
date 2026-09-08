@@ -1,5 +1,11 @@
 # soso — bot共有ファイル
 
+## 開発ツール
+
+- [Live2D素材のローカル監査](tools/live2d_asset_audit/README.md)：PNG/任意PSDの読み取り専用検査。
+- [利用枠の共有](docs/capacity-sharing.md)：残量・更新時刻・作業受付状況を最小限のJSONで共有。
+- 開発依頼・質問・検証結果はGitHub Issues、コード変更はPRで共有します。
+
 MS・クロト（MS2）・ホタルが共同で使うファイルの共有先です。
 
 ## 共有ルール
