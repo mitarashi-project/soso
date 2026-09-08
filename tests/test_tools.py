@@ -121,6 +121,35 @@ class AuditTests(unittest.TestCase):
         self.assertNotIn('<script>', page)
         self.assertIn('&lt;script&gt;', page)
 
+    def test_unsafe_pair_config_cli(self):
+        self.image('normal.png')
+        bad_paths = ['C:/Users/example/private/eye_L.png', 'C:eye.png',
+                     '//server/share/eye.png', '\\\\server\\share\\eye.png',
+                     '/private/eye.png', '\\private\\eye.png', '../eye.png',
+                     'parts/../eye.png', 'parts\\..\\eye.png', '',
+                     './eye.png', 'parts//eye.png', 'parts/', 'eye\n.png']
+        script = str(ROOT / 'tools/live2d_asset_audit/audit.py')
+        for index, bad in enumerate(bad_paths):
+            with self.subTest(path=bad):
+                config = self.root / 'config.json'
+                config.write_text(json.dumps({'pairs': [[bad, 'eye_R.png']]}), encoding='utf-8')
+                output = self.root / ('rejected-' + str(index))
+                run = subprocess.run([sys.executable, script, '--input', str(self.assets),
+                                      '--output', str(output), '--config', str(config)],
+                                     capture_output=True, text=True)
+                self.assertEqual(run.returncode, 2)
+                self.assertFalse(output.exists())
+                if bad:
+                    self.assertNotIn(bad, run.stdout + run.stderr)
+
+    def test_safe_nested_pair_paths(self):
+        (self.assets / 'parts').mkdir()
+        self.image('parts/eye_L.png')
+        self.image('parts/eye_R.png', (40, 40))
+        result = self.run_audit({'pairs': [['parts/eye_L.png', 'parts/eye_R.png']]})
+        self.assertEqual(result['errors'], [])
+        self.assertIn('pair_size', {w['code'] for w in result['warnings']})
+
     def test_psd_generated_layers(self):
         try:
             from psd_tools import PSDImage

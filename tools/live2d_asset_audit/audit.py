@@ -26,6 +26,16 @@ def pixels(im):
     return rgba, alpha.getbbox(), sum(histogram[1:])
 
 
+def safe_pair_path(value):
+    """Validate portable relative paths before any report/output is created."""
+    # Reject Windows paths even when this program is running on Linux.
+    # Backslashes are not accepted: configuration uses forward slashes only.
+    return (bool(value) and not value.startswith('/')
+            and '\\' not in value and ':' not in value
+            and not any(ord(c) < 32 or ord(c) == 127 for c in value)
+            and all(part not in ('', '.', '..') for part in value.split('/')))
+
+
 def audit(source, output, config=None):
     source, output = Path(source).resolve(), Path(output).resolve()
     root = source if source.is_dir() else source.parent
@@ -40,6 +50,8 @@ def audit(source, output, config=None):
     if not isinstance(pairs, list) or any(not isinstance(p, list) or len(p) != 2 or
             any(not isinstance(n, str) for n in p) for p in pairs):
         raise ValueError('pairs must contain pairs of relative filenames')
+    if any(not safe_pair_path(name) for pair in pairs for name in pair):
+        raise ValueError('pairs must contain safe relative paths using forward slashes')
     report = {'schema_version': 1, 'files': [], 'warnings': [], 'errors': []}
 
     def warn(name, code, reason):
