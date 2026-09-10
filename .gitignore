@@ -1,0 +1,4 @@
+__pycache__/
+.venv/
+audit-reports/
+local-assets/

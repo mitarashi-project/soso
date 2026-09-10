@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "agent": "peer",
+  "remaining_percent": null,
+  "reset_at": null,
+  "observed_at": null,
+  "updated_at": "2026-09-08T18:54:47.134017+00:00",
+  "stale": true,
+  "accepting_work": "unknown"
+}
